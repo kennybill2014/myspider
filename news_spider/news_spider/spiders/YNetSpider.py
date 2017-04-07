@@ -42,43 +42,42 @@ class YNetSpider(scrapy.Spider):
 			item['url'] = news.xpath('.//h2/a/@href').extract_first()
 			item['summary'] = news.xpath('.//p/text()').extract_first()
 			item['time'] = news.xpath(".//em[@class='fRight']/text()").extract_first()
+			item['content'] = []
 #			yield scrapy.Request(url=item['url'], meta={'item': item},
 #								 callback=self.parseNews)
-			yield scrapy.Request(url="http://news.ynet.com/2017/04/06/82260t70_2.html", meta={'item': item},
+			yield scrapy.Request(url="http://news.ynet.com/2017/04/06/82260t70.html", meta={'item': item},
 								 callback=self.parseNews)
 			break
 
 	# 解析具体新闻内容
 	def parseNews(self, response):
 		item = response.meta['item']
-		content_list = []
+		content_list = item['content']
 		retContent = {}
+
+		scrollImgUrl = response.xpath("//div[@id='articleAll']/div[@class='scrollCon']/div[@class='scrollBox']/a/img/@src").extract_first()
+		if scrollImgUrl:
+			retContent['0'] = scrollImgUrl
+
+		articleContent = response.xpath("//div[@class='articleBox cfix mb20']/p")
+		for articleItem in articleContent:
+			textContent = articleItem.xpath('text()').extract_first()
+			imgurl = articleItem.xpath(".//img/@src").extract_first()
+			if textContent:
+				retContent['1']=textContent
+			elif imgurl:
+				retContent['0'] = 'http:'+imgurl
+			else:
+				continue
+			content_list.append(retContent)
+
 		item['content'] = content_list
-
-		pagebox = response.xpath("//div[@id='articleAll']/ul[@class='pageBox cfix mb28']/li/a/@href")
-		if len(pagebox):
-			for box in pagebox:
-				boxurl = box.extract()
-				yield scrapy.Request(url=boxurl, meta={'item': item},
-									 callback=self.parsePageBox)
+		scrollRightUrl = response.xpath(
+			"//div[@id='articleAll']/div[@class='scrollCon']/div[@class='scrollBox']/a[@class='scrollRight']/@href").extract_first()
+		if scrollRightUrl:
+			yield scrapy.Request(url=scrollRightUrl, meta={'item': item},
+									 callback=self.parseNews)
 		else:
-			scrollImgUrl = response.xpath("//div[@id='articleAll']/div[@class='scrollCon']/div[@class='scrollBox']/a/img/@src").extract_first()
-			if scrollImgUrl:
-				retContent['0'] = scrollImgUrl
-
-			articleContent = response.xpath("//div[@class='articleBox cfix mb20']/p")
-			for articleItem in articleContent:
-				textContent = articleItem.xpath('text()').extract_first()
-				imgurl = articleItem.xpath(".//img/@src").extract_first()
-				if textContent:
-					retContent['1']=textContent
-				elif imgurl:
-					retContent['0'] = 'http:'+imgurl
-				else:
-					continue
-				content_list.append(retContent)
-
-			item['content'] = content_list
 			yield item
 
 	# 解析具体新闻内容

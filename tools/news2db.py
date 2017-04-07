@@ -20,15 +20,14 @@ while 1:
 	if not line:
 		break
 	line = re.sub("'","’",line)
+	#encoded_json = json.dumps(line)
 	data = json.loads(line)
-	content = ''
-	for item in data['content']:
-		if content == '':
-			content = item;
-		else:
-			content = content + '&#$' + item
-	insertsql = "replace into news(url,title,time,summary,content) values ('"+str(data['url']).decode('utf-8')+"','"+str(data['title']).decode('utf-8')+"','"+str(data['time']).decode('utf-8')+"','"+str(data['summary']).decode('utf-8')+"','"+content.decode('utf-8')+"')"
-	print insertsql
+	datacontent = str(data['content'])
+	datacontent = str(datacontent).replace("u\'", "\'")
+	datacontent = str(datacontent).replace("\'", "\"")
+	datacontent = datacontent.decode("unicode-escape").encode("utf-8")
+	insertsql = "replace into news(url,title,time,summary) values ('"+str(data['url']).decode('utf-8')+"','"+str(data['title']).decode('utf-8')+"','"+str(data['time']).decode('utf-8')+"','"+str(datacontent).decode('utf-8')+"')"
+	#print insertsql
 	conn.execute(insertsql)
 	conn.commit()
 
