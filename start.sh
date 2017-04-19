@@ -5,7 +5,7 @@ cd tools
 python Init.py
 echo "Init File Done."
 cd ../news_spider
-scrapy crawlall
+scrapy crawl ynet
 echo "Crawl Data Done."
 cd ../tools
 python preprocess.py
