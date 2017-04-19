@@ -43,11 +43,11 @@ class YNetSpider(scrapy.Spider):
 			item['summary'] = news.xpath('.//p/text()').extract_first()
 			item['time'] = news.xpath(".//em[@class='fRight']/text()").extract_first()
 			item['content'] = []
-#			yield scrapy.Request(url=item['url'], meta={'item': item},
-#								 callback=self.parseNews)
-			yield scrapy.Request(url="http://news.ynet.com/2017/04/06/82260t70.html", meta={'item': item},
+			yield scrapy.Request(url=item['url'], meta={'item': item},
 								 callback=self.parseNews)
-			break
+#			yield scrapy.Request(url="http://news.ynet.com/2017/04/06/82260t70.html", meta={'item': item},
+#								 callback=self.parseNews)
+#			break
 
 	# 解析具体新闻内容
 	def parseNews(self, response):
@@ -55,7 +55,7 @@ class YNetSpider(scrapy.Spider):
 		content_list = item['content']
 		imgContent = {}
 		scrollImgUrl = response.xpath("//div[@id='articleAll']/div[@class='scrollCon']/div[@class='scrollBox']/a/img/@src").extract_first()
-		print 'img='+scrollImgUrl
+#		print 'img='+scrollImgUrl
 		if scrollImgUrl:
 			imgContent['type'] = '0'
 			imgContent['content'] = scrollImgUrl
@@ -67,7 +67,7 @@ class YNetSpider(scrapy.Spider):
 		for articleItem in articleContent:
 			textContent = articleItem.xpath('text()').extract_first()
 			imgurl = articleItem.xpath("./img/@src").extract_first()
-			print 'textContent=' + textContent
+#			print 'textContent=' + textContent
 			retContent = {}
 			if textContent:
 				retContent['type'] = '1'
@@ -78,10 +78,10 @@ class YNetSpider(scrapy.Spider):
 			else:
 				continue
 			content_list.append(retContent)
-			break
+#			break
 
 		item['content'] = content_list
-		print item['content'][0]
+#		print item['content'][0]
 		scrollRightUrl = response.xpath(
 			"//div[@id='articleAll']/div[@class='scrollCon']/div[@class='scrollBox']/a[@class='scrollRight']/@href").extract_first()
 		if scrollRightUrl:
@@ -117,7 +117,7 @@ class YNetSpider(scrapy.Spider):
 			else:
 				continue
 			content_list.append(retContent)
-			break
+#			break
 		item['content'] = content_list
 		yield item
 
