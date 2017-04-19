@@ -12,7 +12,7 @@ sys.setdefaultencoding('utf-8')
 
 #conn = MySQLdb.connect("127.0.0.1:8889","root","ljw","news")
 #conn=MySQLdb.connect(host='localhost',port = 8889,user='root',passwd='ljw',db ='news')
-conn=MySQLdb.connect(host='localhost',user='root',passwd='ljwsqw20',db='news',port=8889)
+conn=MySQLdb.connect(host='localhost',user='root',passwd='ljwsqw20',db='spider',port=8889)
 cursor = conn.cursor()
 
 file = open(Global.content_dir)
