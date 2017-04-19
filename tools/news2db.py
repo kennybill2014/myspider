@@ -12,10 +12,9 @@ sys.setdefaultencoding('utf-8')
 
 #conn = MySQLdb.connect("127.0.0.1:8889","root","ljw","news")
 #conn=MySQLdb.connect(host='localhost',port = 8889,user='root',passwd='ljw',db ='news')
-conn=MySQLdb.connect(host='localhost',user='root',passwd='ljwsqw20',db='spider',port=8889)
-cursor = conn.cursor()
-
+conn=MySQLdb.connect(host='localhost',user='root',passwd='ljwsqw20',db='spider',port=8889,charset='utf8')
 file = open(Global.content_dir)
+cursor = conn.cursor()
 #conn = sqlite3.connect(Global.db_dir)
 insertsql = "create table if not exists news(uid VARCHAR(255) NOT NULL PRIMARY KEY ,url text,title text,time text,summary text,content text)"
 #print insertsql
@@ -37,7 +36,6 @@ while 1:
 	uid = hashlib.md5(str(data['url']).decode('utf-8')).hexdigest()
 	insertsql = "replace into news(uid,url,title,time,summary,content) values ('"+str(uid)+"','"+str(data['url']).decode('utf-8')+"','"+str(data['title']).decode('utf-8')+"','"+str(data['time']).decode('utf-8')+"','"+str(data['summary']).decode('utf-8')+"','"+str(datacontent).decode('utf-8')+"')"
 	print insertsql
-	cursor.execute('set names utf8')
 	cursor.execute(insertsql)
 cursor.close()
 conn.commit()
