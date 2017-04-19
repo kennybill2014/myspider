@@ -37,6 +37,7 @@ while 1:
 	uid = hashlib.md5(str(data['url']).decode('utf-8')).hexdigest()
 	insertsql = "replace into news(uid,url,title,time,summary,content) values ('"+str(uid)+"','"+str(data['url']).decode('utf-8')+"','"+str(data['title']).decode('utf-8')+"','"+str(data['time']).decode('utf-8')+"','"+str(data['summary']).decode('utf-8')+"','"+str(datacontent).decode('utf-8')+"')"
 	print insertsql
+	cursor.execute('set names utf8')
 	cursor.execute(insertsql)
 cursor.close()
 conn.commit()
