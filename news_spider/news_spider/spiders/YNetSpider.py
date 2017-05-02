@@ -58,7 +58,7 @@ class YNetSpider(scrapy.Spider):
 #		print 'img='+scrollImgUrl
 		if scrollImgUrl:
 			imgContent['type'] = '0'
-			imgContent['content'] = scrollImgUrl
+			imgContent['info'] = scrollImgUrl
 			print 'retcontent='+imgContent.values()[0]
 			content_list.append(imgContent)
 
@@ -71,10 +71,10 @@ class YNetSpider(scrapy.Spider):
 			retContent = {}
 			if textContent:
 				retContent['type'] = '1'
-				retContent['content'] = textContent
+				retContent['info'] = textContent
 			elif imgurl:
 				retContent['type'] = '0'
-				retContent['content'] = imgurl
+				retContent['info'] = imgurl
 			else:
 				continue
 			content_list.append(retContent)
@@ -89,37 +89,6 @@ class YNetSpider(scrapy.Spider):
 									 callback=self.parseNews)
 		else:
 			yield item
-
-	# 解析具体新闻内容
-	def parsePageBox(self, response):
-		item = response.meta['item']
-		content_list = item['content']
-
-		retContent = {}
-		scrollImgUrl = response.xpath("//div[@id='articleAll']/div[@class='scrollCon']/div[@class='scrollBox']/a/img/@src").extract_first()
-		print 'img='+scrollImgUrl
-		if scrollImgUrl:
-			retContent['type'] = '0'
-			retContent['content'] = 'http:' + scrollImgUrl
-			content_list.append(retContent)
-		#	print retContent
-
-		articleContent = response.xpath("//div[@class='articleBox cfix mb20']/p")
-		for articleItem in articleContent:
-			textContent = articleItem.xpath('text()').extract_first()
-			imgurl = articleItem.xpath(".//img/@src").extract_first()
-			if textContent:
-				retContent['type']='1'
-				retContent['content']=textContent
-			elif imgurl:
-				retContent['type'] = '0'
-				retContent['content'] = 'http:'+imgurl
-			else:
-				continue
-			content_list.append(retContent)
-#			break
-		item['content'] = content_list
-		yield item
 
 	def printC(self,text):
 		print'printC:'+text.encode('utf-8')
