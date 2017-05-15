@@ -1,13 +1,17 @@
 #!/bin/bash
 
-echo "Start Crawl..."
-cd tools
-python Init.py
-echo "Init File Done."
-cd ../news_spider
-scrapy crawl ynet
-echo "Crawl Data Done."
-cd ../tools
-python preprocess.py
-cd ../web
-python main.py 1111
+#echo "Init File Done."
+index=0;
+while true;
+do
+   cd ../news_spider
+   echo "Start Crawl..."${index++}
+   scrapy crawl toutiao
+   echo "Crawl Data Done."
+   cd ../tools
+   python news2db.py
+   python Init.py
+done
+#python preprocess.py
+#cd ../web
+#python main.py 1111

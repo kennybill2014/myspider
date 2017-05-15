@@ -18,9 +18,18 @@ class NewsSpiderItem(scrapy.Item):
 	summary = scrapy.Field()
 
 class TitleSpiderItem(scrapy.Item):
+	id = scrapy.Field()
 	title = scrapy.Field()
-	content = scrapy.Field()
+	type = scrapy.Field()
 	url = scrapy.Field()
-	time = scrapy.Field()
+	introduction = scrapy.Field()
+	cover = scrapy.Field()
+	content = scrapy.Field()
+	content_type = scrapy.Field()
+	show_time = scrapy.Field()
+	publish_time = scrapy.Field()
+	group_id = scrapy.Field()
+	source = scrapy.Field()
+	cover_show_type = scrapy.Field()
 
 

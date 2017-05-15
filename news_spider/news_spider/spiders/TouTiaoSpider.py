@@ -1,6 +1,6 @@
 #encoding=utf-8
 import scrapy
-from news_spider.items import NewsSpiderItem
+from news_spider.items import TitleSpiderItem
 import json
 import time 
 class TouTiaoSpider(scrapy.Spider):
@@ -8,51 +8,65 @@ class TouTiaoSpider(scrapy.Spider):
 	name = 'toutiao'
 	allowed_domains = ["toutiao.com"]
 	start_urls = [
-	'http://toutiao.com/articles_news_society/p1'
+	'http://www.toutiao.com/api/pc/feed/?category=funny'
 	]
-	base_class_url = 'http://toutiao.com/articles_news_society'
-	base_url = 'http://toutiao.com'
-#maxpage = 501;#允许爬的最大的页数
-	maxpage = 2;#允许爬的最大的页数
-	category = ['articles_news_society'
-	]
+	base_url = 'http://www.toutiao.com/'
 
 #请求每一个分类,按页数来
 	def parse(self,response):
-		for ctg in self.category:
-			for page in range(1,self.maxpage):
-				url = self.base_url+'/'+ctg+'/p'+str(page)
-#				yield scrapy.Request(url,self.parseNewsHref)
-				yield scrapy.Request(url, self.parseNewsHref)
+		js = json.loads(response.body)
+		hasMore = js["has_more"]
+		message = js["message"]
+		data = js["data"]
 
-#解析每页新闻列表的地址
-	def parseNewsHref(self,response):
-		urls = response.xpath("//div[@class='info']//a/@href").extract()
-		for url in urls:
-			news_url = self.base_url+url
-			yield scrapy.Request(news_url,self.parseNews)
+		for dataitem in data:
+			item = TitleSpiderItem()
+			item["group_id"] = dataitem["group_id"]
+			item["title"] = dataitem["title"]
+			item["type"] = "23"
+			item["url"] = ""
+			item["introduction"] = dataitem["abstract"]
+			coverarray = dataitem["image_list"]
+			cover = "["
+			firstItem = 1
+			for coverItem in coverarray:
+				if(firstItem==1):
+					cover = cover + '"' + coverItem["url"] + '"'
+					firstItem = 0
+				else:
+					cover = cover+',"' + coverItem["url"] + '"'
+			cover = cover + "]"
+			print cover
+			item["cover"] = cover#dataitem["image_list"][0]["url"]
+			item["content_type"] = "1"
+			item["cover_show_type"]="3"
+			item["source"] = dataitem["source"]
+			item['content'] = []
+			detailurl = self.base_url + 'a' + dataitem["group_id"]
+			yield scrapy.Request(url=detailurl, meta={'item': item},
+							 callback=self.parseDetail)
+			break
 
 #解析具体新闻内容
-	def parseNews(self,response):
-		articles = response.xpath("//div[@id='article-main']")
-		item = NewsSpiderItem()
-		title = articles.xpath("//h1[@class='article-title']/text()").extract_first()
-#		self.printC(title)
-		tm = articles.xpath("//div[@class='articleInfo']//span[@class='time']/text()").extract_first()
+	def parseDetail(self,response):
+		item = response.meta['item']
+		content_list = item['content']
+		tm = response.xpath("//div[@class='articleInfo']/span[@class='time']/text()").extract_first()
 #		self.printC(tm)
-		titlesrc = articles.xpath("//div[@class='articleInfo']//span[@class='src']/text()").extract_first()
-		divs = articles.xpath("//div[@class='article-content']")
+		divs = response.xpath("//div[@class='article-content']/div/p")
 		content=""
-		for p in divs.xpath(".//p"):
-			content =  content + p.extract()
-		self.printC(tm)
-		if(len(title)!=0 and len(tm)!=0 and len(content)!=0):
-			item['title'] = title
-			item['time'] = int(time.mktime(time.strptime(tm,'%Y-%m-%d %H:%M')))
-			item['src'] = titlesrc
-			item['url'] = response.url
+		for articleItem in divs:
+			textContent = articleItem.xpath('text()').extract_first()
+			if textContent is None:
+				content = content + articleItem.extract()
+			else:
+				content = content + textContent
+		if(len(tm)!=0 and len(content)!=0):
+			item['publish_time'] = str(int(time.mktime(time.strptime(tm,'%Y-%m-%d %H:%M'))))
+			date = time.strftime('%Y-%m-%d %H:%M', time.localtime(time.time()))
+			item['show_time'] = str(int(time.mktime(time.strptime(date,'%Y-%m-%d %H:%M'))))
 			item['content'] = content
-			yield item
+		yield item
 
 	def printC(self,text):
 		print'printC:'+text.encode('utf-8')
